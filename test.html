@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        canvas{
+            display: block;
+            margin:50px auto;
+            border:1px dashed #ccc;
+        }
+    </style>
+</head>
+<body>
+<canvas></canvas>
+<script src="jquery-1.7.2.min.js"></script>
+<script>
+
+    var canvas=document.querySelector('canvas');
+
+    var ps=canvas.getContext('2d');
+
+    var width=document.documentElement.clientWidth;
+    var height=document.documentElement.clientHeight;
+
+    canvas.width=width/2;
+    canvas.height=height/2;
+
+
+//    定义构造函数
+
+
+//    公共部分有宽高相同，半径相同，变化的速度相同，变化的方向不同，颜色随机，生成的位置相同
+    function circle(x,y){
+//      初始化位置
+        this.x=x||canvas.width/2;
+        this.y=y|| canvas.height/2;
+        this.r=15;
+
+//        速度变化
+        this.speedX=this.random(6);
+        this.speedY=this.random(8);
+        this.speedR=Math.abs(this.random(1));
+
+        this.opacitySpeed=Math.abs(Math.random()*0.1);
+
+//     初始化颜色
+
+        this.red=Math.abs(this.random(255));
+        this.green=Math.abs(this.random(255));
+        this.blue=Math.abs(this.random(255));
+
+        this.opacity=1;
+
+
+
+    }
+
+    circle.prototype={
+
+        random: function (num) {
+            var number= Math.floor(Math.random()*num)+1;
+
+            return Math.floor(Math.random()*2)?number:-number;
+
+        },
+
+        move: function () {
+
+            if(this.r<=0) return;
+
+            this.x+=this.speedX;
+            this.y+=this.speedY;
+            this.r-=this.speedR;
+            this.opacity-=this.opacitySpeed;
+
+//            return this;
+
+            this.update();
+        },
+        update:function(){
+
+            ps.beginPath();
+
+
+            ps.fillStyle='rgba('+this.red+','+this.green+','+this.blue+','+this.opacity+')';
+
+
+            ps.arc(this.x,this.y,this.r,0,2*Math.PI);
+
+            ps.fill();
+
+        }
+
+
+    };
+
+
+    var actor={
+
+//        定时器
+        sid:0,  //非常重要的属性，必须有，作用是只允许定时器开一次
+
+//        定义一个数组承载创建的每个小演员
+        init:[],
+
+//        创建小演员
+        creat: function (num,x,y) {
+
+            var arr=this.init;
+           for(var i=0; i<num;i++){
+
+              arr.push(new circle(x,y));
+
+           }
+            return this;
+        },
+//       每个演员在画布上表演
+
+        render:function(){
+            if(this.sid) return;  //只允许定时器开一次
+
+            var array=this.init;
+            setInterval(function () {
+
+                ps.clearRect(0,0,width,height);
+
+                for(var i=0;i<array.length;i++){
+
+                    array[i].move();
+
+                }
+
+            },60);
+
+
+            this.sid=1;  //当定时器开启后置为1，不允许在开启
+        }
+
+
+    };
+
+
+
+    canvas.onmousemove=function(e){
+
+        var x=event.clientX;
+        var y=event.clientY;
+
+        var cX=canvas.offsetLeft;
+        var cY=canvas.offsetTop;
+
+        x=x-cX;
+        y=y-cY;
+
+        actor.creat(1,x,y).render();
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
